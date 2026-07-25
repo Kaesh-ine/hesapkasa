@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+
+<html lang="tr">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Hesap Kasası</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+  :root{
+
+    --bg:#101113;
+
+    --panel:#17181b;
+
+    --panel-alt:#1c1d21;
+
+    --border:#2a2b2f;
+
+    --text:#eceef0;
+
+    --text-dim:#8b8d93;
+
+    --accent:#3fb6c4;
+
+    --accent-dim:#2c8a95;
+
+    --success:#4caf7a;
+
+    --danger:#e5534b;
+
+    --gold:#d1b26f;
+
+    --osman:#4fc3f7;
+
+    --orcun:#ffb74d;
+
+    --radius:10px;
+
+    --mono:'JetBrains Mono', monospace;
+
+    --display:'Space Grotesk', sans-serif;
+
+    --body:'Inter', sans-serif;
+
+  }
+
+  *{box-sizing:border-box;}
+
+  html,body{margin:0;padding:0;}
+
+  body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;}
+
+  ::selection{background:var(--accent-dim);color:#fff;}
+
+
+
+  /* ---------- LOGIN ---------- */
+
+  #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+
+  .login-card{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:36px 32px;text-align:center;}
+
+  .login-logo{width:120px;max-width:100%;height:auto;margin:0 auto 18px;display:block;}
+
+  .lock-icon{width:46px;height:46px;margin:0 auto 18px;border-radius:50%;background:var(--panel-alt);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;}
+
+  .login-card h1{font-family:var(--display);font-size:22px;margin:0 0 6px;letter-spacing:.2px;}
+
+  .login-card p{color:var(--text-dim);font-size:13px;margin:0 0 24px;}
+
+  .login-card input,.login-card select{width:100%;background:var(--panel-alt);border:1px solid var(--border);color:var(--text);padding:12px 14px;border-radius:8px;font-size:14px;font-family:var(--mono);outline:none;margin-bottom:14px;}
+
+  .login-card select{font-family:var(--body);cursor:pointer;}
+
+  .login-card input:focus,.login-card select:focus{border-color:var(--accent);}
+
+  .login-card button{width:100%;padding:12px;border:none;border-radius:8px;background:var(--accent);color:#04262b;font-weight:600;font-size:14px;cursor:pointer;transition:background .15s ease;}
+
+  .login-card button:hover{background:var(--accent-dim);color:#fff;}
+
+  .login-error{color:var(--danger);font-size:12.5px;margin-top:10px;min-height:16px;}
+
+  .shake{animation:shake .35s;}
+
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+
+
+
+  /* ---------- APP SHELL ---------- */
+
+  #app{display:none;min-height:100vh;}
+
+  header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);background:var(--panel);position:sticky;top:0;z-index:20;}
+
+  header .brand{display:flex;align-items:center;gap:10px;}
+
+  .header-logo{height:34px;width:auto;display:block;}
+
+  header .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--success);box-shadow:0 0 8px var(--success);}
+
+  header h1{font-family:var(--display);font-size:18px;margin:0;font-weight:600;}
+
+  header .sync-label{font-size:11.5px;color:var(--text-dim);margin-left:4px;}
+
+  header .who{font-size:11.5px;color:var(--text-dim);margin-left:14px;padding-left:14px;border-left:1px solid var(--border);}
+
+  header .right{display:flex;align-items:center;gap:10px;}
+
+  header button.logout,header button.logbtn{background:none;border:1px solid var(--border);color:var(--text-dim);padding:8px 14px;border-radius:7px;font-size:12.5px;cursor:pointer;}
+
+  header button.logout:hover{border-color:var(--danger);color:var(--danger);}
+
+  header button.logbtn:hover{border-color:var(--accent);color:var(--accent);}
+
+
+
+  main{padding:20px 24px 60px;max-width:1600px;margin:0 auto;}
+
+
+
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:18px;}
+
+  .panel h2{font-family:var(--display);font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin:0 0 14px;}
+
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;align-items:end;}
+
+  .field label{display:block;font-size:11.5px;color:var(--text-dim);margin-bottom:6px;}
+
+  .field .row-inline{display:flex;gap:6px;}
+
+  input[type=text],input[type=password],input[type=search],select{width:100%;background:var(--panel-alt);border:1px solid var(--border);color:var(--text);padding:9px 10px;border-radius:7px;font-size:13px;font-family:var(--body);outline:none;}
+
+  input:focus,select:focus{border-color:var(--accent);}
+
+  select{cursor:pointer;}
+
+  .btn{padding:9px 14px;border-radius:7px;border:none;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
+
+  .btn-ghost{background:var(--panel-alt);color:var(--text);border:1px solid var(--border);}
+
+  .btn-ghost:hover{border-color:var(--accent);}
+
+  .btn-accent{background:var(--accent);color:#04262b;}
+
+  .btn-accent:hover{background:var(--accent-dim);color:#fff;}
+
+  .btn-success{background:var(--success);color:#04260f;}
+
+  .btn-success:hover{filter:brightness(1.1);}
+
+  .btn-purple{background:#8a6fd6;color:#1b0f38;}
+
+  .btn-purple:hover{filter:brightness(1.1);}
+
+  .btn-danger{background:var(--danger);color:#2b0705;}
+
+  .btn-danger:hover{filter:brightness(1.1);}
+
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+
+  .actions-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+
+  .gen-pw-display{font-family:var(--mono);background:var(--panel-alt);border:1px dashed var(--border);color:var(--gold);padding:9px 10px;border-radius:7px;font-size:12.5px;}
+
+
+
+  /* ---------- FILTER BAR ---------- */
+
+  .filter-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+
+  .filter-bar .field{min-width:180px;flex:1;}
+
+  .filter-bar .field.small{min-width:140px;flex:none;width:150px;}
+
+  .result-count{font-size:11.5px;color:var(--text-dim);margin-left:auto;white-space:nowrap;padding-top:18px;}
+
+
+
+  /* ---------- BULK TOOLBAR ---------- */
+
+  .bulk-bar{display:none;align-items:center;gap:12px;background:#1c2a2c;border:1px solid var(--accent-dim);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12.5px;}
+
+  .bulk-bar.show{display:flex;}
+
+  .bulk-bar span{color:var(--accent);font-weight:600;}
+
+
+
+  /* ---------- TABLE ---------- */
+
+  .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);}
+
+  table{border-collapse:collapse;width:100%;min-width:1300px;}
+
+  thead tr{background:var(--panel-alt);}
+
+  thead th{background:var(--panel-alt);color:var(--text-dim);text-transform:uppercase;font-size:10.5px;letter-spacing:.06em;font-weight:600;padding:10px 8px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
+
+  thead th.sortable{cursor:pointer;user-select:none;}
+
+  thead th.sortable:hover{color:var(--accent);}
+
+  thead th .arrow{opacity:.5;font-size:9px;margin-left:2px;}
+
+  tbody td{padding:8px;font-size:12.5px;border-bottom:1px solid var(--border);vertical-align:middle;}
+
+  tbody tr{position:relative;}
+
+  tbody tr td:nth-child(2){border-left:3px solid transparent;}
+
+  tbody tr.owner-osman td:nth-child(2){border-left-color:var(--osman);}
+
+  tbody tr.owner-orcun td:nth-child(2){border-left-color:var(--orcun);}
+
+  tbody tr:hover{background:var(--panel-alt);}
+
+  tbody tr.selected{background:#152225;}
+
+  .cred-cell{font-family:var(--mono);cursor:pointer;color:var(--text-dim);user-select:none;padding:4px 6px;border-radius:5px;}
+
+  .cred-cell:hover{background:#232428;color:var(--text);}
+
+  .cred-cell.revealed{color:var(--text);}
+
+  .badge{padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block;}
+
+  .tarih-cell{color:var(--text-dim);font-size:11px;font-family:var(--mono);}
+
+  .toggle-btn{background:none;border:none;font-size:16px;cursor:pointer;color:#4a4b50;}
+
+  .toggle-btn.on{color:var(--success);}
+
+  .toggle-btn.on.ban{color:var(--danger);}
+
+  .icon-btn{background:none;border:1px solid var(--border);color:var(--text-dim);border-radius:6px;padding:5px 9px;font-size:11.5px;cursor:pointer;}
+
+  .icon-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+  .icon-btn.del:hover{border-color:var(--danger);color:var(--danger);}
+
+  .icon-btn.note.has{color:var(--accent);border-color:var(--accent-dim);}
+
+
+
+  .pager{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:16px;}
+
+  .pager span{font-size:12.5px;color:var(--text-dim);font-family:var(--mono);}
+
+
+
+  /* ---------- LOG PANEL ---------- */
+
+  .log-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);align-items:flex-start;justify-content:flex-end;z-index:100;}
+
+  .log-overlay.open{display:flex;}
+
+  .log-panel{width:100%;max-width:380px;height:100vh;background:var(--panel);border-left:1px solid var(--border);padding:20px;overflow-y:auto;}
+
+  .log-panel h3{font-family:var(--display);font-size:15px;margin:0 0 4px;}
+
+  .log-panel .sub{font-size:11.5px;color:var(--text-dim);margin-bottom:16px;}
+
+  .log-entry{border-bottom:1px solid var(--border);padding:10px 0;font-size:12px;}
+
+  .log-entry.failed{background:rgba(229,83,75,0.08);}
+
+  .log-entry .who{font-weight:600;}
+
+  .log-entry .who.Osman{color:var(--osman);}
+
+  .log-entry .who.Orçun{color:var(--orcun);}
+
+  .log-entry .meta{color:var(--text-dim);font-size:10.5px;margin-top:2px;font-family:var(--mono);}
+
+  .log-close{float:right;background:none;border:1px solid var(--border);color:var(--text-dim);border-radius:6px;padding:4px 9px;cursor:pointer;font-size:12px;}
+
+
+
+  /* ---------- MODAL ---------- */
+
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);align-items:center;justify-content:center;z-index:100;padding:20px;}
+
+  .modal-overlay.open{display:flex;}
+
+  .modal{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:100%;max-width:420px;}
+
+  .modal h3{font-family:var(--display);font-size:16px;margin:0 0 18px;}
+
+  .modal .field{margin-bottom:12px;}
+
+  .modal textarea{width:100%;min-height:140px;background:var(--panel-alt);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:10px;font-family:var(--body);font-size:13px;resize:vertical;outline:none;}
+
+  .modal textarea:focus{border-color:var(--accent);}
+
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;}
+
+
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel-alt);border:1px solid var(--border);color:var(--text);padding:10px 18px;border-radius:8px;font-size:12.5px;opacity:0;transition:all .25s ease;pointer-events:none;z-index:200;display:flex;align-items:center;gap:12px;}
+
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
+
+  .toast button{background:none;border:none;color:var(--accent);font-weight:600;cursor:pointer;font-size:12.5px;}
+
+
+
+  .empty-state{padding:40px;text-align:center;color:var(--text-dim);font-size:13px;}
+
+</style>
+
+</head>
+
+<body>
+
+
+
+<!-- LOGIN -->
+
+<div id="login-screen">
+
+  <div class="login-card">
+
+    <img src="grindstore-logo.png" alt="Grindstore" class="login-logo">
+
+    <div class="lock-icon" id="lockIcon">
+
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b8d93" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+
+    </div>
+
+    <h1>Hesap Kasası</h1>
+
+    <p>Devam etmek için e-posta ve şifrenizle giriş yapın</p>
+
+    <input type="email" id="emailInput" placeholder="E-Posta Adresi" autocomplete="off">
+
+    <input type="password" id="passwordInput" placeholder="Şifre" autocomplete="off">
+
+    <button onclick="tryLogin()">Giriş Yap</button>
+
+    <div class="login-error" id="loginError"></div>
+
+  </div>
+
+</div>
+
+
+
+<!-- APP -->
+
+<div id="app">
+
+  <header>
+
+    <div class="brand">
+
+      <img src="grindstore-logo.png" alt="Grindstore" class="header-logo">
+
+      <span class="dot" id="syncDot"></span>
+
+      <h1>Hesap Kasası</h1>
+
+      <span class="sync-label" id="syncLabel">bağlanıyor…</span>
+
+      <span class="who" id="whoLabel"></span>
+
+    </div>
+
+    <div class="right">
+
+      <button class="logbtn" onclick="openLog()">🕘 İşlem Geçmişi</button>
+
+      <button class="logout" onclick="logout()">Çıkış Yap</button>
+
+    </div>
+
+  </header>
+
+
+
+  <main>
+
+    <div class="panel">
+
+      <h2>Yeni Hesap Ekle</h2>
+
+      <div class="form-grid">
+
+        <div class="field"><label>Mail</label><input type="text" id="in_mail" placeholder="ornek@mail.com"></div>
+
+        <div class="field"><label>EA Şifre</label><input type="text" id="in_ea_pw"></div>
+
+        <div class="field"><label>Mail Şifre</label><input type="text" id="in_mail_pw"></div>
+
+        <div class="field"><label>Rank</label><select id="in_rank"></select></div>
+
+        <div class="field"><label>Mail Site</label><select id="in_site"></select></div>
+
+        <div class="field"><label>Hesap Sahibi</label><select id="in_sahip"></select></div>
+
+        <div class="field">
+
+          <label>Şifre Üret</label>
+
+          <div class="row-inline">
+
+            <button class="btn btn-purple" onclick="generatePassword()">🎲 Üret</button>
+
+            <span class="gen-pw-display" id="genPwDisplay">bekleniyor</span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="actions-row">
+
+        <button class="btn btn-success" onclick="addAccount()">+ Hesabı Ekle</button>
+
+        <button class="btn btn-ghost" onclick="exportTxt()">⭳ TXT</button>
+
+        <button class="btn btn-ghost" onclick="exportCsv()">⭳ CSV / Excel</button>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="panel">
+
+      <h2>Ara &amp; Filtrele</h2>
+
+      <div class="filter-bar">
+
+        <div class="field">
+
+          <label>Mail ara</label>
+
+          <input type="search" id="f_search" placeholder="mail adresi ara…">
+
+        </div>
+
+        <div class="field small">
+
+          <label>Rank</label>
+
+          <select id="f_rank"><option value="">Hepsi</option></select>
+
+        </div>
+
+        <div class="field small">
+
+          <label>Sahip</label>
+
+          <select id="f_sahip"><option value="">Hepsi</option></select>
+
+        </div>
+
+        <div class="field small">
+
+          <label>Durum</label>
+
+          <select id="f_durum">
+
+            <option value="">Hepsi</option>
+
+            <option value="satilmayan">Satılmayanlar</option>
+
+            <option value="satilan">Satılanlar</option>
+
+            <option value="ilanda">İlanda olanlar</option>
+
+            <option value="ban">Banlı olanlar</option>
+
+          </select>
+
+        </div>
+
+        <div class="result-count" id="resultCount"></div>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="bulk-bar" id="bulkBar">
+
+      <span id="bulkCount">0 seçili</span>
+
+      <button class="btn btn-success" onclick="bulkMarkSold()">Satıldı işaretle</button>
+
+      <button class="btn btn-danger" onclick="bulkDelete()">Seçilenleri Sil</button>
+
+      <button class="btn btn-ghost" onclick="clearSelection()">Seçimi Temizle</button>
+
+    </div>
+
+
+
+    <div class="panel" style="padding:0;overflow:hidden;">
+
+      <div class="table-wrap">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>
+
+              <th>#</th>
+
+              <th class="sortable" data-sort="tarih">Tarih <span class="arrow" id="arrow_tarih"></span></th>
+
+              <th class="sortable" data-sort="mail">Mail <span class="arrow" id="arrow_mail"></span></th>
+
+              <th>EA Şifre</th><th>Mail Şifre</th>
+
+              <th class="sortable" data-sort="rank">Rank <span class="arrow" id="arrow_rank"></span></th>
+
+              <th>Site</th>
+
+              <th class="sortable" data-sort="sahip">Sahip <span class="arrow" id="arrow_sahip"></span></th>
+
+              <th>Ban</th><th>İlan</th><th>Satıldı</th><th>Not</th><th></th><th></th>
+
+            </tr>
+
+          </thead>
+
+          <tbody id="tableBody"></tbody>
+
+        </table>
+
+      </div>
+
+      <div id="emptyState" class="empty-state" style="display:none;">Kriterlere uyan hesap bulunamadı.</div>
+
+    </div>
+
+
+
+    <div class="pager">
+
+      <button class="btn btn-ghost" onclick="oncekiSayfa()"><< Önceki</button>
+
+      <span id="pageLabel">Sayfa 1 / 1</span>
+
+      <button class="btn btn-ghost" onclick="sonrakiSayfa()">Sonraki &gt;&gt;</button>
+
+    </div>
+
+  </main>
+
+</div>
+
+
+
+<!-- EDIT MODAL -->
+
+<div class="modal-overlay" id="editModal">
+
+  <div class="modal">
+
+    <h3>Hesabı Düzenle</h3>
+
+    <div class="field"><label>Mail</label><input type="text" id="ed_mail"></div>
+
+    <div class="field"><label>EA Şifre</label><input type="text" id="ed_ea_pw"></div>
+
+    <div class="field"><label>Mail Şifre</label><input type="text" id="ed_mail_pw"></div>
+
+    <div class="field"><label>Rank</label><select id="ed_rank"></select></div>
+
+    <div class="field"><label>Mail Site</label><select id="ed_site"></select></div>
+
+    <div class="field"><label>Sahip</label><select id="ed_sahip"></select></div>
+
+    <div class="modal-actions">
+
+      <button class="btn btn-ghost" onclick="closeModal('editModal')">Vazgeç</button>
+
+      <button class="btn btn-accent" onclick="saveEdit()">Kaydet</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- NOTE MODAL -->
+
+<div class="modal-overlay" id="noteModal">
+
+  <div class="modal">
+
+    <h3>Hesap Notu</h3>
+
+    <textarea id="noteText" placeholder="Not yazın..."></textarea>
+
+    <div class="modal-actions">
+
+      <button class="btn btn-ghost" onclick="closeModal('noteModal')">Vazgeç</button>
+
+      <button class="btn btn-accent" onclick="saveNote()">Kaydet</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- LOG PANEL -->
+
+<div class="log-overlay" id="logOverlay">
+
+  <div class="log-panel">
+
+    <button class="log-close" onclick="closeLog()">Kapat ✕</button>
+
+    <h3>İşlem Geçmişi</h3>
+
+    <div class="sub">Son 50 işlem ve başarısız giriş denemeleri</div>
+
+    <div id="logList"></div>
+
+  </div>
+
+</div>
+
+
+
+<div class="toast" id="toast"><span id="toastMsg"></span><button id="toastAction" style="display:none;"></button></div>
+
+
+
+<script src="script.js"></script>
+
+</body>
+
+</html>
+
+
+
