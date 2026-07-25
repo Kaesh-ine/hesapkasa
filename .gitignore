@@ -1,0 +1,3 @@
+# Ignore local environment and secret files
+.env
+hesap-f6090-firebase-adminsdk-fbsvc-f9d792b5d4.json
