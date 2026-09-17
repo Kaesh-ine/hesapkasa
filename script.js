@@ -121,6 +121,7 @@ async function tryLogin(){
 
     
 
+    resetCryptoKey();
     SITE_PASSWORD = pw; // Girilen şifre artık AES şifreleme anahtarımız
 
     authToken = data.idToken;
@@ -275,6 +276,7 @@ function logout(){
 
   sessionStorage.removeItem('hk_session');
 
+  resetCryptoKey();
   SITE_PASSWORD = null;
 
   currentUser = null;
@@ -301,6 +303,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   if(sessionData){
 
+    resetCryptoKey();
     SITE_PASSWORD = sessionData.pw;
 
     let namePart = sessionData.email.split('@')[0];
@@ -364,10 +367,22 @@ async function ensureAuthToken(){
 /* ---------------- ŞİFRELEME (AES-GCM) ---------------- */
 
 let cryptoKeyPromise = null;
+let cryptoKeyPassword = null;
+
+function resetCryptoKey(){
+
+  cryptoKeyPromise = null;
+  cryptoKeyPassword = null;
+
+}
 
 function getCryptoKey(){
 
-  if(cryptoKeyPromise) return cryptoKeyPromise;
+  if(!SITE_PASSWORD) throw new Error('Şifreleme anahtarı için oturum parolası gerekli');
+
+  if(cryptoKeyPromise && cryptoKeyPassword === SITE_PASSWORD) return cryptoKeyPromise;
+
+  cryptoKeyPassword = SITE_PASSWORD;
 
   const enc = new TextEncoder();
 
@@ -1446,6 +1461,3 @@ function escapeHtml(str){
 }
 
 function escapeAttr(str){ return escapeHtml(str).replace(/`/g,'&#96;'); }
-
-
-
