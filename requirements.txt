@@ -3,3 +3,4 @@ Flask-Cors>=3.0
 firebase-admin>=7.0
 requests>=2.30
 python-dotenv>=1.0
+cryptography>=42.0

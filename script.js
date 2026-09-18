@@ -404,21 +404,9 @@ async function encryptField(plain){
 
   if(!plain) return '';
 
-  const key = await getCryptoKey();
-
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-
-  const enc = new TextEncoder();
-
-  const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, enc.encode(plain));
-
-  const ctArr = new Uint8Array(ct);
-
-  const combined = new Uint8Array(iv.length + ctArr.length);
-
-  combined.set(iv,0); combined.set(ctArr, iv.length);
-
-  return 'ENC:' + btoa(String.fromCharCode(...combined));
+  // Yeni kayıtların şifrelenmesini backend, ortak kasa anahtarıyla yapar.
+  // Eski ENC kayıtları decryptField ile geriye dönük olarak okunabilir.
+  return plain;
 
 }
 
@@ -426,7 +414,7 @@ async function decryptField(value){
 
   if(!value) return '';
 
-  if(!value.startsWith('ENC:')) return value; // eski/şifrelenmemiş kayıt
+  if(!value.startsWith('ENC:')) return value; // backend tarafından çözülen kayıt
 
   try{
 
