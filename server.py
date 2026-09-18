@@ -8,6 +8,7 @@ from flask_cors import CORS
 import firebase_admin
 from firebase_admin import auth, credentials, db
 import requests
+from cryptography.fernet import Fernet, InvalidToken
 
 try:
     from dotenv import load_dotenv
@@ -21,9 +22,16 @@ SERVICE_ACCOUNT_PATH = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 
 FIREBASE_API_KEY = os.getenv('FIREBASE_API_KEY')
 FIREBASE_DB_URL = os.getenv('FIREBASE_DB_URL', 'https://hesap-f6090-default-rtdb.europe-west1.firebasedatabase.app')
+MASTER_ENCRYPTION_KEY = os.getenv('MASTER_ENCRYPTION_KEY')
 
 if not FIREBASE_API_KEY:
     raise RuntimeError('FIREBASE_API_KEY must be set in the environment')
+if not MASTER_ENCRYPTION_KEY:
+    raise RuntimeError('MASTER_ENCRYPTION_KEY must be set in the environment')
+try:
+    vault_cipher = Fernet(MASTER_ENCRYPTION_KEY.encode('ascii'))
+except Exception as exc:
+    raise RuntimeError('MASTER_ENCRYPTION_KEY must be a valid Fernet key') from exc
 
 if SERVICE_ACCOUNT_JSON:
     try:
@@ -81,6 +89,52 @@ def log_event(user, action, detail, ip=None):
         db.reference('/loglar').push(payload)
     except Exception as exc:
         app.logger.error('Failed to write log event: %s', exc)
+
+
+SECRET_FIELDS = ('ea_pw', 'mail_pw', 'not')
+
+
+def encrypt_vault_fields(value):
+    if not isinstance(value, list):
+        return value
+    result = []
+    for item in value:
+        if not isinstance(item, dict):
+            result.append(item)
+            continue
+        copied = dict(item)
+        for field in SECRET_FIELDS:
+            plain = copied.get(field)
+            if not plain or not isinstance(plain, str):
+                continue
+            if plain.startswith(('SRV:', 'ENC:')):
+                continue
+            token = vault_cipher.encrypt(plain.encode('utf-8')).decode('ascii')
+            copied[field] = 'SRV:' + token
+        result.append(copied)
+    return result
+
+
+def decrypt_vault_fields(value):
+    if not isinstance(value, list):
+        return value
+    result = []
+    for item in value:
+        if not isinstance(item, dict):
+            result.append(item)
+            continue
+        copied = dict(item)
+        for field in SECRET_FIELDS:
+            encrypted = copied.get(field)
+            if not isinstance(encrypted, str) or not encrypted.startswith('SRV:'):
+                continue
+            try:
+                copied[field] = vault_cipher.decrypt(encrypted[4:].encode('ascii')).decode('utf-8')
+            except (InvalidToken, UnicodeDecodeError, ValueError):
+                app.logger.error('Unable to decrypt vault field %s', field)
+                copied[field] = ''
+        result.append(copied)
+    return result
 
 
 def auth_required(fn):
@@ -171,7 +225,7 @@ def api_refresh():
 @auth_required
 def api_hesaplar_get():
     data = db.reference('/hesaplar').get() or []
-    return jsonify(data)
+    return jsonify(decrypt_vault_fields(data))
 
 
 @app.route('/api/hesaplar', methods=['PUT'])
@@ -180,7 +234,7 @@ def api_hesaplar_put():
     payload = request.get_json(silent=True)
     if payload is None:
         return jsonify({'error': 'Geçersiz JSON'}), 400
-    db.reference('/hesaplar').set(payload)
+    db.reference('/hesaplar').set(encrypt_vault_fields(payload))
     return jsonify({'ok': True})
 
 
