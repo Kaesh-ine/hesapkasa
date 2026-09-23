@@ -50,6 +50,7 @@ let currentUser = null;
 let authToken = null;
 
 let authRefreshTimer = null;
+let realtimeAbortController = null;
 
 let appInitialized = false;
 
@@ -253,10 +254,9 @@ async function showApp(){
 
 
   fetchData(true);
-
   clearInterval(pollTimer);
-
   pollTimer = setInterval(() => fetchData(false), POLL_MS);
+  startRealtimeSync();
 
   clearInterval(authRefreshTimer);
 
@@ -284,8 +284,9 @@ function logout(){
   authToken = null;
 
   clearInterval(pollTimer);
-
   clearInterval(authRefreshTimer);
+  if(realtimeAbortController) realtimeAbortController.abort();
+  realtimeAbortController = null;
 
   document.getElementById('app').style.display='none';
 
@@ -488,6 +489,39 @@ async function fetchData(isInitial){
 
   }
 
+}
+
+async function startRealtimeSync(){
+  if(realtimeAbortController) realtimeAbortController.abort();
+  realtimeAbortController = new AbortController();
+  const controller = realtimeAbortController;
+
+  try{
+    const res = await fetch(`${SERVER_API_BASE}/hesaplar/events`, {
+      headers: getAuthHeaders(),
+      signal: controller.signal
+    });
+    if(!res.ok || !res.body) throw new Error('Realtime bağlantısı kurulamadı: HTTP '+res.status);
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while(!controller.signal.aborted){
+      const {value, done} = await reader.read();
+      if(done) throw new Error('Realtime bağlantısı kapandı');
+      buffer += decoder.decode(value, {stream:true});
+      const events = buffer.split('\n\n');
+      buffer = events.pop() || '';
+      if(events.some(event => event.includes('event: accounts-updated'))) fetchData(false);
+    }
+  }catch(e){
+    if(!controller.signal.aborted){
+      console.error('Realtime sync failed', e);
+      setTimeout(() => {
+        if(realtimeAbortController === controller) startRealtimeSync();
+      }, 3000);
+    }
+  }
 }
 
 
