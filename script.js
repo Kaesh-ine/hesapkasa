@@ -660,7 +660,8 @@ function populateSelects(){
 
       const key = th.dataset.sort;
 
-      if(sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = 1; }
+      if(sortKey === key) sortDir *= -1;
+      else { sortKey = key; sortDir = key === 'sonDuzenleme' ? -1 : 1; }
 
       updateSortArrows();
 
@@ -686,7 +687,7 @@ function fillSelect(id, values, keepFirst){
 
 function updateSortArrows(){
 
-  ['tarih','mail','rank','sahip'].forEach(k=>{
+  ['tarih','sonDuzenleme','mail','rank','sahip'].forEach(k=>{
 
     const el = document.getElementById('arrow_'+k);
 
@@ -802,7 +803,7 @@ async function addAccount(){
 
     ban:false, ilanda:false, satildi:false,
 
-    tarih: nowStr(), not:'', ekleyen: currentUser
+    tarih: nowStr(), sonDuzenleme: nowStr(), not:'', ekleyen: currentUser
 
   });
 
@@ -835,6 +836,7 @@ async function addAccount(){
 async function toggleDurum(index, key){
 
   hesaplar[index][key] = !hesaplar[index][key];
+  hesaplar[index].sonDuzenleme = nowStr();
 
   render();
 
@@ -930,7 +932,7 @@ async function bulkMarkSold(){
 
   if(!selected.size) return;
 
-  selected.forEach(idx=>{ if(hesaplar[idx]) hesaplar[idx].satildi = true; });
+  selected.forEach(idx=>{ if(hesaplar[idx]) { hesaplar[idx].satildi = true; hesaplar[idx].sonDuzenleme = nowStr(); } });
 
   const ok = await pushData();
 
@@ -1053,6 +1055,7 @@ async function saveEdit(){
   hesaplar[editIndex].site = document.getElementById('ed_site').value;
 
   hesaplar[editIndex].sahip = document.getElementById('ed_sahip').value;
+  hesaplar[editIndex].sonDuzenleme = nowStr();
 
 
 
@@ -1121,6 +1124,7 @@ async function saveNote(){
 
 
   hesaplar[noteIndex].not = await encryptField(yeniNot);
+  hesaplar[noteIndex].sonDuzenleme = nowStr();
 
   const ok = await pushData();
 
@@ -1275,6 +1279,10 @@ function getFilteredSorted(){
     let av, bv;
 
     if(sortKey === 'tarih'){ av = parseTarih(a.h.tarih); bv = parseTarih(b.h.tarih); }
+    else if(sortKey === 'sonDuzenleme'){
+      av = parseTarih(a.h.sonDuzenleme || a.h.tarih);
+      bv = parseTarih(b.h.sonDuzenleme || b.h.tarih);
+    }
 
     else { av = (a.h[sortKey]||'').toString().toLowerCase(); bv = (b.h[sortKey]||'').toString().toLowerCase(); }
 
@@ -1369,6 +1377,7 @@ function render(){
       <td>${start+i+1}</td>
 
       <td class="tarih-cell">${h.tarih||'-'}</td>
+      <td class="tarih-cell">${h.sonDuzenleme || h.tarih || '-'}</td>
 
       <td><span class="cred-cell" data-label="Mail">${escapeHtml(h.mail)}</span></td>
 
