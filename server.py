@@ -1,9 +1,11 @@
 import json
 import os
+import queue
+import threading
 import time
 from pathlib import Path
 
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, Response, jsonify, request, send_from_directory, stream_with_context
 from flask_cors import CORS
 import firebase_admin
 from firebase_admin import auth, credentials, db
@@ -57,6 +59,8 @@ firebase_admin.initialize_app(cred, {'databaseURL': FIREBASE_DB_URL})
 
 app = Flask(__name__, static_folder=str(BASE_DIR), static_url_path='')
 CORS(app, resources={r"/api/*": {"origins": "*"}})
+account_streams = set()
+account_streams_lock = threading.Lock()
 
 IDENTITY_URL = f'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}'
 REFRESH_URL = f'https://securetoken.googleapis.com/v1/token?key={FIREBASE_API_KEY}'
@@ -135,6 +139,16 @@ def decrypt_vault_fields(value):
                 copied[field] = ''
         result.append(copied)
     return result
+
+
+def notify_account_streams():
+    with account_streams_lock:
+        streams = list(account_streams)
+    for stream in streams:
+        try:
+            stream.put_nowait('event: accounts-updated\ndata: {}\n\n')
+        except queue.Full:
+            app.logger.warning('Account update stream is full; skipping notification')
 
 
 def auth_required(fn):
@@ -235,7 +249,35 @@ def api_hesaplar_put():
     if payload is None:
         return jsonify({'error': 'Geçersiz JSON'}), 400
     db.reference('/hesaplar').set(encrypt_vault_fields(payload))
+    notify_account_streams()
     return jsonify({'ok': True})
+
+
+@app.route('/api/hesaplar/events')
+@auth_required
+def api_hesaplar_events():
+    updates = queue.Queue(maxsize=10)
+    with account_streams_lock:
+        account_streams.add(updates)
+
+    @stream_with_context
+    def event_stream():
+        try:
+            yield ': connected\n\n'
+            while True:
+                try:
+                    yield updates.get(timeout=25)
+                except queue.Empty:
+                    yield ': keep-alive\n\n'
+        finally:
+            with account_streams_lock:
+                account_streams.discard(updates)
+
+    return Response(event_stream(), mimetype='text/event-stream', headers={
+        'Cache-Control': 'no-cache',
+        'X-Accel-Buffering': 'no',
+        'Connection': 'keep-alive',
+    })
 
 
 @app.route('/api/log', methods=['GET'])
